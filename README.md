@@ -4,6 +4,8 @@ Chrome extension (Manifest V3) that adds a **Salesforce Spotlight** bar on Light
 
 **Repository:** [github.com/znAaron/SalesforceSpotlight](https://github.com/znAaron/SalesforceSpotlight)
 
+<img width="966" height="473" alt="Screenshot 2026-04-07 at 3 55 09 PM" src="https://github.com/user-attachments/assets/d73ad1cc-1c02-4fc1-9677-7433b09e56bb" />
+
 ## Requirements
 
 - Google Chrome (or another Chromium browser that supports Manifest V3 extensions)
