@@ -39,34 +39,8 @@ Chrome does **not** install extensions by opening the ZIP directly—you must **
 
 ## Version
 
-Current extension version is defined in `manifest.json` (see `version` field).
-
-## Publishing (maintainers)
-
-To push this repo to GitHub (after [creating the empty repo](https://github.com/znAaron/SalesforceSpotlight)):
-
-```bash
-cd "/path/to/SalesforceSpotlight"
-git remote add origin https://github.com/znAaron/SalesforceSpotlight.git   # skip if already added
-git branch -M main
-git push -u origin main
-```
-
-Use **GitHub CLI** (`gh`), a **personal access token** with HTTPS, or **SSH keys** if prompted for credentials.
-
-To publish **release 1.2** with the ZIP attached:
-
-1. On GitHub: **Releases** → **Draft a new release**.
-2. Choose tag **`v1.2.0`** (create new tag) or tag name **`1.2`** if you prefer; set **Release title** to **1.2** or **Salesforce Spotlight 1.2**.
-3. Upload **`SalesforceSpotlight.zip`** under **Attach binaries**.
-4. Publish the release.
-
-Or with GitHub CLI (if installed and authenticated):
-
-```bash
-gh release create v1.2.0 "/path/to/SalesforceSpotlight.zip" --repo znAaron/SalesforceSpotlight --title "1.2" --notes "Salesforce Spotlight Chrome extension v1.2.0"
-```
+1.2.0 (Apr 2026)
 
 ## License
 
-Specify your license here (e.g. MIT) if you publish this publicly.
+MIT
