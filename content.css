@@ -1,0 +1,262 @@
+/* Scoped to Shadow DOM — also duplicated as SFNAV_SHADOW_CSS in content.js (shadow cannot use this file via fetch). */
+
+.sfnav-root {
+  --sfnav-bg: rgba(3, 45, 96, 0.96);
+  --sfnav-border: rgba(255, 255, 255, 0.12);
+  --sfnav-text: #f3f3f3;
+  --sfnav-muted: rgba(243, 243, 243, 0.65);
+  --sfnav-input-bg: rgba(255, 255, 255, 0.1);
+  --sfnav-accent: #0b5cab;
+  --sfnav-font: "Salesforce Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2147483646;
+  pointer-events: none;
+  font-family: var(--sfnav-font);
+  font-size: 13px;
+  line-height: 1.35;
+  box-sizing: border-box;
+}
+
+.sfnav-root *,
+.sfnav-root *::before,
+.sfnav-root *::after {
+  box-sizing: border-box;
+}
+
+.sfnav-bar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 16px;
+  background: var(--sfnav-bg);
+  border-top: 1px solid var(--sfnav-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.18);
+}
+
+.sfnav-brand {
+  flex: 0 0 auto;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--sfnav-text);
+  font-size: 12px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.sfnav-search-wrap {
+  flex: 1 1 auto;
+  max-width: 560px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.sfnav-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--sfnav-border);
+  border-radius: 4px;
+  background: var(--sfnav-input-bg);
+  color: var(--sfnav-text);
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.sfnav-input::placeholder {
+  color: var(--sfnav-muted);
+}
+
+.sfnav-input:focus {
+  border-color: rgba(11, 92, 171, 0.85);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.sfnav-input:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.sfnav-status {
+  flex: 0 1 280px;
+  font-size: 11px;
+  color: var(--sfnav-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sfnav-status--error {
+  color: #ffb75d;
+}
+
+.sfnav-status--loading::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  vertical-align: -2px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  animation: sfnav-spin 0.65s linear infinite;
+}
+
+@keyframes sfnav-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sfnav-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+}
+
+.sfnav-btn {
+  pointer-events: auto;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--sfnav-border);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--sfnav-text);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.sfnav-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.sfnav-btn-close {
+  opacity: 0.85;
+}
+
+.sfnav-dropdown {
+  pointer-events: auto;
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  width: min(560px, calc(100vw - 32px));
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  padding: 6px;
+  background: rgba(8, 32, 63, 0.98);
+  border: 1px solid var(--sfnav-border);
+  border-radius: 8px;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35);
+  animation: sfnav-fade-in 0.12s ease-out;
+}
+
+.sfnav-dropdown[hidden] {
+  display: none !important;
+}
+
+@keyframes sfnav-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.sfnav-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  margin: 2px 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sfnav-text);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.sfnav-result:hover,
+.sfnav-result--active {
+  background: rgba(11, 92, 171, 0.35);
+}
+
+.sfnav-result-name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sfnav-badge {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--sfnav-text);
+}
+
+.sfnav-badge--flow {
+  background: rgba(59, 130, 246, 0.35);
+}
+
+.sfnav-badge--object {
+  background: rgba(16, 185, 129, 0.35);
+}
+
+.sfnav-badge--lwc {
+  background: rgba(168, 85, 247, 0.35);
+}
+
+.sfnav-badge--apex {
+  background: rgba(245, 158, 11, 0.35);
+}
+
+.sfnav-empty {
+  padding: 12px 10px;
+  color: var(--sfnav-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .sfnav-status {
+    display: none;
+  }
+
+  .sfnav-bar {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .sfnav-search-wrap {
+    order: 3;
+    flex: 1 1 100%;
+    max-width: none;
+    margin: 0;
+  }
+}
