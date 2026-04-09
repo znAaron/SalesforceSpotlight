@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Salesforce Spotlight</title>
+    <style>
+      :root {
+        --bg: rgba(15, 23, 42, 0.98);
+        --border: rgba(255, 255, 255, 0.12);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --accent: #8b5cf6;
+        --track: rgba(255, 255, 255, 0.12);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        width: 320px;
+        padding: 16px;
+        font-family: "Salesforce Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Helvetica, Arial, sans-serif;
+        font-size: 13px;
+        line-height: 1.4;
+        color: var(--text);
+        background: var(--bg);
+        border: 1px solid var(--border);
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        background: linear-gradient(135deg, #60a5fa, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .subtitle {
+        margin: 0 0 16px;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+      }
+      section {
+        margin-bottom: 18px;
+      }
+      section:last-of-type {
+        margin-bottom: 0;
+      }
+      .section-title {
+        margin: 0 0 10px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .row:last-child {
+        border-bottom: none;
+      }
+      .row-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+      }
+      .badge {
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 3px 7px;
+        border-radius: 5px;
+        box-shadow: 0 0 0 1px inset rgba(255, 255, 255, 0.1);
+      }
+      .badge--flow {
+        background: rgba(59, 130, 246, 0.25);
+        color: #93c5fd;
+      }
+      .badge--object {
+        background: rgba(16, 185, 129, 0.25);
+        color: #6ee7b7;
+      }
+      .badge--lwc {
+        background: rgba(168, 85, 247, 0.25);
+        color: #d8b4fe;
+      }
+      .badge--apex {
+        background: rgba(245, 158, 11, 0.25);
+        color: #fcd34d;
+      }
+      .switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+      .switch-slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: var(--track);
+        border-radius: 24px;
+        transition: background 0.2s ease;
+        border: 1px solid var(--border);
+      }
+      .switch-slider::before {
+        content: "";
+        position: absolute;
+        height: 18px;
+        width: 18px;
+        left: 2px;
+        bottom: 2px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+      .switch input:checked + .switch-slider {
+        background: rgba(139, 92, 246, 0.45);
+        border-color: rgba(139, 92, 246, 0.5);
+      }
+      .switch input:checked + .switch-slider::before {
+        transform: translateX(20px);
+      }
+      .switch input:focus-visible + .switch-slider {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .radio-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        cursor: pointer;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+      .radio-row:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .radio-row input {
+        margin-top: 2px;
+        accent-color: var(--accent);
+      }
+      .radio-row input:focus-visible + .radio-text {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+      .radio-text {
+        flex: 1;
+      }
+      .radio-text strong {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+      .radio-text span {
+        font-size: 11px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Salesforce Spotlight</h1>
+    <p class="subtitle">Settings</p>
+
+    <section aria-labelledby="types-heading">
+      <h2 id="types-heading" class="section-title">Search component types</h2>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--flow">Flow</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeFlow" data-type="Flow" />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--object">Object</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeObject" data-type="Object" />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--lwc">LWC</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeLwc" data-type="LWC" />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--apex">Apex</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeApex" data-type="Apex" />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+    </section>
+
+    <section aria-labelledby="display-heading">
+      <h2 id="display-heading" class="section-title">Default on page load</h2>
+      <div class="radio-group" role="radiogroup" aria-labelledby="display-heading">
+        <label class="radio-row">
+          <input type="radio" name="defaultDisplay" value="expanded" id="displayExpanded" />
+          <span class="radio-text">
+            <strong>Expanded</strong>
+            <span>Show the full search bar at the bottom.</span>
+          </span>
+        </label>
+        <label class="radio-row">
+          <input type="radio" name="defaultDisplay" value="collapsed" id="displayCollapsed" checked />
+          <span class="radio-text">
+            <strong>Collapsed (pill)</strong>
+            <span>Only show the small Spotlight pill until you open it.</span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

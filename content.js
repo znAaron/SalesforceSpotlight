@@ -26,8 +26,48 @@
 
   const HOST_ID = 'sfnav-extension-host';
   const REOPEN_ID = 'sfnav-reopen-button';
+  const SETTINGS_KEY = 'sfnav_settings';
   const DEBOUNCE_MS = 150;
   const MAX_RESULTS = 10;
+
+  const DEFAULT_USER_SETTINGS = {
+    enabledTypes: {
+      Flow: true,
+      Object: true,
+      LWC: true,
+      Apex: true,
+    },
+    defaultDisplay: 'collapsed',
+  };
+
+  /**
+   * @param {unknown} raw
+   * @returns {{ enabledTypes: Record<string, boolean>, defaultDisplay: 'expanded' | 'collapsed' }}
+   */
+  function mergeUserSettings(raw) {
+    const enabledTypes = { ...DEFAULT_USER_SETTINGS.enabledTypes };
+    if (raw && typeof raw === 'object' && raw.enabledTypes && typeof raw.enabledTypes === 'object') {
+      for (const k of Object.keys(DEFAULT_USER_SETTINGS.enabledTypes)) {
+        if (typeof raw.enabledTypes[k] === 'boolean') {
+          enabledTypes[k] = raw.enabledTypes[k];
+        }
+      }
+    }
+    let defaultDisplay = DEFAULT_USER_SETTINGS.defaultDisplay;
+    if (
+      raw &&
+      typeof raw === 'object' &&
+      (raw.defaultDisplay === 'expanded' || raw.defaultDisplay === 'collapsed')
+    ) {
+      defaultDisplay = raw.defaultDisplay;
+    }
+    return { enabledTypes, defaultDisplay };
+  }
+
+  /** @type {{ enabledTypes: Record<string, boolean>, defaultDisplay: 'expanded' | 'collapsed' }} */
+  let userSettings = mergeUserSettings(null);
+  /** @type {Record<string, number> | null} */
+  let lastCounts = null;
 
   /** Inlined from content.css — avoid fetch(chrome-extension://…) which MV3 / page CSP can block. */
   const SFNAV_SHADOW_CSS = `/* Scoped to Shadow DOM root — class names prefixed with sfnav- */
@@ -507,18 +547,35 @@
     els.status.classList.toggle('sfnav-status--loading', isLoading);
   }
 
-  /** Ready: only two rows of counts (flows/objects, LWC/Apex); no Ready/cached line. */
+  /** Ready: only two rows of counts (flows/objects, LWC/Apex); respects enabled types from settings. */
   function setReadyStatus(counts, itemFallback) {
     if (!els || !els.status) return;
     els.status.classList.remove('sfnav-status--error', 'sfnav-status--loading');
     const c = counts;
+    const en = userSettings.enabledTypes;
     if (c && typeof c.flows === 'number') {
+      const parts1 = [];
+      if (en.Flow) parts1.push(`${c.flows} flows`);
+      if (en.Object) parts1.push(`${c.objects} objects`);
+      const parts2 = [];
+      if (en.LWC) parts2.push(`${c.lwc} LWC`);
+      if (en.Apex) parts2.push(`${c.apex} Apex`);
+
+      if (parts1.length === 0 && parts2.length === 0) {
+        if (els.statusCounts) els.statusCounts.hidden = true;
+        if (els.statusSummary) {
+          els.statusSummary.hidden = false;
+          els.statusSummary.textContent = 'All search types disabled in settings';
+        }
+        return;
+      }
+
       if (els.statusSummary) {
         els.statusSummary.textContent = '';
         els.statusSummary.hidden = true;
       }
-      if (els.statusRow1) els.statusRow1.textContent = `${c.flows} flows · ${c.objects} objects`;
-      if (els.statusRow2) els.statusRow2.textContent = `${c.lwc} LWC · ${c.apex} Apex`;
+      if (els.statusRow1) els.statusRow1.textContent = parts1.length ? parts1.join(' · ') : '—';
+      if (els.statusRow2) els.statusRow2.textContent = parts2.length ? parts2.join(' · ') : '—';
       if (els.statusCounts) els.statusCounts.hidden = false;
     } else {
       if (els.statusCounts) els.statusCounts.hidden = true;
@@ -568,14 +625,16 @@
 
     if (!result.ok) {
       components = [];
+      lastCounts = null;
       dbgWarn('loadComponents failed', result.error);
       setStatus(result.error || 'Failed to load.', 'error');
       return;
     }
 
     components = Array.isArray(result.components) ? result.components : [];
+    lastCounts = result.counts && typeof result.counts === 'object' ? result.counts : null;
     dbg('loadComponents OK', 'in-memory length', components.length);
-    setReadyStatus(result.counts, components.length);
+    setReadyStatus(lastCounts, components.length);
   }
 
   function normalizeQuery(q) {
@@ -597,6 +656,7 @@
     const scored = [];
     for (let i = 0; i < components.length; i += 1) {
       const item = components[i];
+      if (!userSettings.enabledTypes[item.type]) continue;
       const hay = item.searchText || item.name.toLowerCase();
 
       const exactIdx = hay.indexOf(q);
@@ -826,12 +886,44 @@
     document.body.appendChild(btn);
   }
 
-  function mount() {
+  function onSettingsStorageChanged(changes, areaName) {
+    if (areaName !== 'local' || !changes[SETTINGS_KEY]) return;
+    const ch = changes[SETTINGS_KEY];
+    const prev = mergeUserSettings(ch.oldValue);
+    userSettings = mergeUserSettings(ch.newValue);
+    if (els) {
+      setReadyStatus(lastCounts, components.length);
+      if (els.input && normalizeQuery(els.input.value)) {
+        filtered = filterComponents(els.input.value);
+        renderDropdown();
+      }
+    }
+    if (prev.defaultDisplay !== userSettings.defaultDisplay) {
+      if (userSettings.defaultDisplay === 'collapsed') {
+        hideFooter();
+      } else {
+        showFooter();
+      }
+    }
+  }
+
+  async function mount() {
     dbg('mount()', 'href', window.location.href);
     if (document.getElementById(HOST_ID)) {
       dbg('mount skipped — host already present');
       return;
     }
+
+    userSettings = await new Promise((resolve) => {
+      chrome.storage.local.get(SETTINGS_KEY, (data) => {
+        if (chrome.runtime.lastError) {
+          dbgWarn('storage.get settings', chrome.runtime.lastError.message);
+          resolve(mergeUserSettings(null));
+          return;
+        }
+        resolve(mergeUserSettings(data[SETTINGS_KEY]));
+      });
+    });
 
     const host = document.createElement('div');
     host.id = HOST_ID;
@@ -903,11 +995,19 @@
       true
     );
 
+    chrome.storage.onChanged.addListener(onSettingsStorageChanged);
+
+    if (userSettings.defaultDisplay === 'collapsed') {
+      hideFooter();
+    }
+
     loadComponents(false);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mount, { once: true });
+    document.addEventListener('DOMContentLoaded', () => {
+      mount();
+    }, { once: true });
   } else {
     mount();
   }
