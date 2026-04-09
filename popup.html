@@ -18,7 +18,7 @@
       }
       body {
         margin: 0;
-        width: 320px;
+        width: 340px;
         padding: 16px;
         font-family: "Salesforce Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
           Roboto, Helvetica, Arial, sans-serif;
@@ -57,6 +57,12 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .section-hint {
+        margin: -4px 0 10px;
+        font-size: 11px;
+        line-height: 1.35;
         color: var(--muted);
       }
       .row {
@@ -100,6 +106,26 @@
       .badge--apex {
         background: rgba(245, 158, 11, 0.25);
         color: #fcd34d;
+      }
+      .badge--profile {
+        background: rgba(239, 68, 68, 0.25);
+        color: #fca5a5;
+      }
+      .badge--permset {
+        background: rgba(6, 182, 212, 0.25);
+        color: #67e8f9;
+      }
+      .badge--permsetgroup {
+        background: rgba(236, 72, 153, 0.25);
+        color: #f9a8d4;
+      }
+      .badge--trigger {
+        background: rgba(234, 88, 12, 0.25);
+        color: #fdba74;
+      }
+      .badge--vfpage {
+        background: rgba(99, 102, 241, 0.25);
+        color: #a5b4fc;
       }
       .switch {
         position: relative;
@@ -191,38 +217,6 @@
     <h1>Salesforce Spotlight</h1>
     <p class="subtitle">Settings</p>
 
-    <section aria-labelledby="types-heading">
-      <h2 id="types-heading" class="section-title">Search component types</h2>
-      <div class="row">
-        <span class="row-label"><span class="badge badge--flow">Flow</span></span>
-        <label class="switch">
-          <input type="checkbox" id="typeFlow" data-type="Flow" />
-          <span class="switch-slider" aria-hidden="true"></span>
-        </label>
-      </div>
-      <div class="row">
-        <span class="row-label"><span class="badge badge--object">Object</span></span>
-        <label class="switch">
-          <input type="checkbox" id="typeObject" data-type="Object" />
-          <span class="switch-slider" aria-hidden="true"></span>
-        </label>
-      </div>
-      <div class="row">
-        <span class="row-label"><span class="badge badge--lwc">LWC</span></span>
-        <label class="switch">
-          <input type="checkbox" id="typeLwc" data-type="LWC" />
-          <span class="switch-slider" aria-hidden="true"></span>
-        </label>
-      </div>
-      <div class="row">
-        <span class="row-label"><span class="badge badge--apex">Apex</span></span>
-        <label class="switch">
-          <input type="checkbox" id="typeApex" data-type="Apex" />
-          <span class="switch-slider" aria-hidden="true"></span>
-        </label>
-      </div>
-    </section>
-
     <section aria-labelledby="display-heading">
       <h2 id="display-heading" class="section-title">Default on page load</h2>
       <div class="radio-group" role="radiogroup" aria-labelledby="display-heading">
@@ -239,6 +233,74 @@
             <strong>Collapsed (pill)</strong>
             <span>Only show the small Spotlight pill until you open it.</span>
           </span>
+        </label>
+      </div>
+    </section>
+
+    <section aria-labelledby="types-heading">
+      <h2 id="types-heading" class="section-title">Search component types</h2>
+      <p class="section-hint">All types are on by default. Turn off any you do not want in search results.</p>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--flow">Flow</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeFlow" data-type="Flow" checked />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--object">Object</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeObject" data-type="Object" checked />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--lwc">LWC</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeLwc" data-type="LWC" checked />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--apex">Apex</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeApex" data-type="Apex" checked />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--profile">Profile</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeProfile" data-type="Profile" checked />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--permset">Perm set</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typePermSet" data-type="PermSet" checked />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--permsetgroup">PS group</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typePermSetGroup" data-type="PermSetGroup" checked />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--trigger">Trigger</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeTrigger" data-type="Trigger" checked />
+          <span class="switch-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+      <div class="row">
+        <span class="row-label"><span class="badge badge--vfpage">VF page</span></span>
+        <label class="switch">
+          <input type="checkbox" id="typeVFPage" data-type="VFPage" checked />
+          <span class="switch-slider" aria-hidden="true"></span>
         </label>
       </div>
     </section>

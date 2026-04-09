@@ -11,6 +11,11 @@ const DEFAULT_SETTINGS = {
     Object: true,
     LWC: true,
     Apex: true,
+    Profile: true,
+    PermSet: true,
+    PermSetGroup: true,
+    Trigger: true,
+    VFPage: true,
   },
   defaultDisplay: 'collapsed',
 };
@@ -37,6 +42,11 @@ function getSettingsFromForm() {
     Object: Boolean(document.getElementById('typeObject')?.checked),
     LWC: Boolean(document.getElementById('typeLwc')?.checked),
     Apex: Boolean(document.getElementById('typeApex')?.checked),
+    Profile: Boolean(document.getElementById('typeProfile')?.checked),
+    PermSet: Boolean(document.getElementById('typePermSet')?.checked),
+    PermSetGroup: Boolean(document.getElementById('typePermSetGroup')?.checked),
+    Trigger: Boolean(document.getElementById('typeTrigger')?.checked),
+    VFPage: Boolean(document.getElementById('typeVFPage')?.checked),
   };
   const expanded = document.getElementById('displayExpanded');
   const defaultDisplay =
@@ -50,10 +60,20 @@ function applySettingsToForm(settings) {
   const object = document.getElementById('typeObject');
   const lwc = document.getElementById('typeLwc');
   const apex = document.getElementById('typeApex');
+  const profile = document.getElementById('typeProfile');
+  const permSet = document.getElementById('typePermSet');
+  const permSetGroup = document.getElementById('typePermSetGroup');
+  const trigger = document.getElementById('typeTrigger');
+  const vfPage = document.getElementById('typeVFPage');
   if (flow) flow.checked = enabledTypes.Flow !== false;
   if (object) object.checked = enabledTypes.Object !== false;
   if (lwc) lwc.checked = enabledTypes.LWC !== false;
   if (apex) apex.checked = enabledTypes.Apex !== false;
+  if (profile) profile.checked = enabledTypes.Profile !== false;
+  if (permSet) permSet.checked = enabledTypes.PermSet !== false;
+  if (permSetGroup) permSetGroup.checked = enabledTypes.PermSetGroup !== false;
+  if (trigger) trigger.checked = enabledTypes.Trigger !== false;
+  if (vfPage) vfPage.checked = enabledTypes.VFPage !== false;
 
   const expanded = document.getElementById('displayExpanded');
   const collapsed = document.getElementById('displayCollapsed');
@@ -76,7 +96,17 @@ async function loadAndApply() {
 }
 
 function wireTypeToggles() {
-  const ids = ['typeFlow', 'typeObject', 'typeLwc', 'typeApex'];
+  const ids = [
+    'typeFlow',
+    'typeObject',
+    'typeLwc',
+    'typeApex',
+    'typeProfile',
+    'typePermSet',
+    'typePermSetGroup',
+    'typeTrigger',
+    'typeVFPage',
+  ];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (el) {

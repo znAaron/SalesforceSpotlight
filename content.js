@@ -36,6 +36,11 @@
       Object: true,
       LWC: true,
       Apex: true,
+      Profile: true,
+      PermSet: true,
+      PermSetGroup: true,
+      Trigger: true,
+      VFPage: true,
     },
     defaultDisplay: 'collapsed',
   };
@@ -217,7 +222,7 @@
 .sfnav-status {
   flex: 0 1 auto;
   min-width: 0;
-  max-width: 260px;
+  max-width: 320px;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -446,6 +451,36 @@
   box-shadow: 0 0 0 1px inset rgba(245, 158, 11, 0.3);
 }
 
+.sfnav-badge--profile {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  box-shadow: 0 0 0 1px inset rgba(239, 68, 68, 0.3);
+}
+
+.sfnav-badge--permset {
+  background: rgba(6, 182, 212, 0.25);
+  color: #67e8f9;
+  box-shadow: 0 0 0 1px inset rgba(6, 182, 212, 0.3);
+}
+
+.sfnav-badge--permsetgroup {
+  background: rgba(236, 72, 153, 0.25);
+  color: #f9a8d4;
+  box-shadow: 0 0 0 1px inset rgba(236, 72, 153, 0.3);
+}
+
+.sfnav-badge--trigger {
+  background: rgba(234, 88, 12, 0.25);
+  color: #fdba74;
+  box-shadow: 0 0 0 1px inset rgba(234, 88, 12, 0.3);
+}
+
+.sfnav-badge--vfpage {
+  background: rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+  box-shadow: 0 0 0 1px inset rgba(99, 102, 241, 0.3);
+}
+
 .sfnav-empty {
   padding: 16px 10px;
   color: var(--sfnav-muted);
@@ -507,7 +542,7 @@
               type="search"
               class="sfnav-input"
               id="sfnavInput"
-              placeholder="Search flows, objects, LWC, Apex…"
+              placeholder="Search flows, objects, LWC, Apex, profiles, perm sets…"
               autocomplete="off"
               spellcheck="false"
               aria-label="Search Salesforce components"
@@ -521,6 +556,7 @@
             <div class="sfnav-status-grid" id="sfnavStatusCounts" hidden>
               <div class="sfnav-status-row" id="sfnavStatusRow1"></div>
               <div class="sfnav-status-row" id="sfnavStatusRow2"></div>
+              <div class="sfnav-status-row" id="sfnavStatusRow3"></div>
             </div>
           </div>
           <div class="sfnav-actions">
@@ -543,11 +579,12 @@
     if (els.statusCounts) els.statusCounts.hidden = true;
     if (els.statusRow1) els.statusRow1.textContent = '';
     if (els.statusRow2) els.statusRow2.textContent = '';
+    if (els.statusRow3) els.statusRow3.textContent = '';
     els.status.classList.toggle('sfnav-status--error', isError);
     els.status.classList.toggle('sfnav-status--loading', isLoading);
   }
 
-  /** Ready: only two rows of counts (flows/objects, LWC/Apex); respects enabled types from settings. */
+  /** Ready: three rows of counts; respects enabled types from settings. */
   function setReadyStatus(counts, itemFallback) {
     if (!els || !els.status) return;
     els.status.classList.remove('sfnav-status--error', 'sfnav-status--loading');
@@ -555,13 +592,19 @@
     const en = userSettings.enabledTypes;
     if (c && typeof c.flows === 'number') {
       const parts1 = [];
-      if (en.Flow) parts1.push(`${c.flows} flows`);
-      if (en.Object) parts1.push(`${c.objects} objects`);
+      if (en.Flow) parts1.push(`${c.flows ?? 0} flows`);
+      if (en.Object) parts1.push(`${c.objects ?? 0} objects`);
+      if (en.Profile) parts1.push(`${c.profiles ?? 0} profiles`);
       const parts2 = [];
-      if (en.LWC) parts2.push(`${c.lwc} LWC`);
-      if (en.Apex) parts2.push(`${c.apex} Apex`);
+      if (en.LWC) parts2.push(`${c.lwc ?? 0} LWC`);
+      if (en.Apex) parts2.push(`${c.apex ?? 0} Apex`);
+      if (en.Trigger) parts2.push(`${c.triggers ?? 0} triggers`);
+      const parts3 = [];
+      if (en.PermSet) parts3.push(`${c.permSets ?? 0} perm sets`);
+      if (en.PermSetGroup) parts3.push(`${c.permSetGroups ?? 0} perm set groups`);
+      if (en.VFPage) parts3.push(`${c.vfPages ?? 0} VF pages`);
 
-      if (parts1.length === 0 && parts2.length === 0) {
+      if (parts1.length === 0 && parts2.length === 0 && parts3.length === 0) {
         if (els.statusCounts) els.statusCounts.hidden = true;
         if (els.statusSummary) {
           els.statusSummary.hidden = false;
@@ -576,6 +619,7 @@
       }
       if (els.statusRow1) els.statusRow1.textContent = parts1.length ? parts1.join(' · ') : '—';
       if (els.statusRow2) els.statusRow2.textContent = parts2.length ? parts2.join(' · ') : '—';
+      if (els.statusRow3) els.statusRow3.textContent = parts3.length ? parts3.join(' · ') : '—';
       if (els.statusCounts) els.statusCounts.hidden = false;
     } else {
       if (els.statusCounts) els.statusCounts.hidden = true;
@@ -699,6 +743,16 @@
         return 'sfnav-badge sfnav-badge--lwc';
       case 'Apex':
         return 'sfnav-badge sfnav-badge--apex';
+      case 'Profile':
+        return 'sfnav-badge sfnav-badge--profile';
+      case 'PermSet':
+        return 'sfnav-badge sfnav-badge--permset';
+      case 'PermSetGroup':
+        return 'sfnav-badge sfnav-badge--permsetgroup';
+      case 'Trigger':
+        return 'sfnav-badge sfnav-badge--trigger';
+      case 'VFPage':
+        return 'sfnav-badge sfnav-badge--vfpage';
       default:
         return 'sfnav-badge';
     }
@@ -951,6 +1005,7 @@
       statusCounts: qs(shadow, '#sfnavStatusCounts'),
       statusRow1: qs(shadow, '#sfnavStatusRow1'),
       statusRow2: qs(shadow, '#sfnavStatusRow2'),
+      statusRow3: qs(shadow, '#sfnavStatusRow3'),
       refresh: qs(shadow, '#sfnavRefresh'),
       close: qs(shadow, '#sfnavClose'),
     };

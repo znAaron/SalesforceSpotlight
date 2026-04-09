@@ -20,7 +20,7 @@ function sidHint(sid) {
 }
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
-const CACHE_PREFIX = 'sfnav_v5_';
+const CACHE_PREFIX = 'sfnav_v7_';
 const API_VERSIONS = ['v66.0', 'v65.0', 'v64.0', 'v63.0', 'v62.0', 'v61.0', 'v60.0'];
 
 function resolveMyDomainOrigin(tabUrl) {
@@ -58,6 +58,32 @@ function firstDefined(obj, keys) {
 
 function cacheKey(host) {
   return `${CACHE_PREFIX}${host}`;
+}
+
+/**
+ * Words users can type to narrow by component type (e.g. "profile API access" finds profile "API Access").
+ * Appended to every item's searchText; filter uses multi-token AND on this haystack.
+ */
+const TYPE_SEARCH_KEYWORDS = {
+  Flow: 'flow',
+  Object: 'object',
+  LWC: 'lwc lightning web component',
+  Apex: 'apex class',
+  Profile: 'profile',
+  PermSet: 'permission set permset perm set',
+  PermSetGroup: 'permission set group permsetgroup perm set group psg',
+  Trigger: 'trigger apex trigger',
+  VFPage: 'visualforce vf page vfpage',
+};
+
+/**
+ * @param {string} type
+ * @param {string} base - name/label fragments (any case)
+ */
+function searchTextWithTypeKeywords(type, base) {
+  const kw = TYPE_SEARCH_KEYWORDS[type] || '';
+  const combined = `${base} ${kw}`.trim();
+  return combined.toLowerCase().replace(/\s+/g, ' ');
 }
 
 /**
@@ -179,7 +205,18 @@ async function fetchSobjects(apiBase, sid, apiVersion) {
   return list;
 }
 
-function buildComponentList(uiOrigin, flows, sobjects, lwcs, apexes) {
+function buildComponentList(
+  uiOrigin,
+  flows,
+  sobjects,
+  lwcs,
+  apexes,
+  profiles,
+  permSets,
+  permSetGroups,
+  triggers,
+  vfPages
+) {
   const items = [];
   const o = uiOrigin.replace(/\/$/, '');
 
@@ -193,7 +230,7 @@ function buildComponentList(uiOrigin, flows, sobjects, lwcs, apexes) {
     const name = apiName ? `${label} (${apiName})` : label;
     items.push({
       type: 'Flow', name,
-      searchText: `${label} ${apiName} ${pt}`.toLowerCase(),
+      searchText: searchTextWithTypeKeywords('Flow', `${label} ${apiName} ${pt}`),
       url: avId
         ? `${o}/builder_platform_interaction/flowBuilder.app?flowId=${encodeURIComponent(avId)}`
         : `${o}/lightning/setup/Flows/page?address=%2F${encodeURIComponent(id)}`,
@@ -206,7 +243,7 @@ function buildComponentList(uiOrigin, flows, sobjects, lwcs, apexes) {
     items.push({
       type: 'Object',
       name: `${label} (${apiName})`,
-      searchText: `${label} ${apiName}`.toLowerCase(),
+      searchText: searchTextWithTypeKeywords('Object', `${label} ${apiName}`),
       url: `${o}/lightning/setup/ObjectManager/${encodeURIComponent(apiName)}/Details/view`,
     });
   }
@@ -218,7 +255,7 @@ function buildComponentList(uiOrigin, flows, sobjects, lwcs, apexes) {
     const name = label !== dev ? `${label} (${dev})` : dev;
     items.push({
       type: 'LWC', name,
-      searchText: `${label} ${dev}`.toLowerCase(),
+      searchText: searchTextWithTypeKeywords('LWC', `${label} ${dev}`),
       url: `${o}/lightning/setup/LightningComponentBundles/page?address=%2F${id}`,
     });
   }
@@ -228,8 +265,63 @@ function buildComponentList(uiOrigin, flows, sobjects, lwcs, apexes) {
     if (!n || !id) continue;
     items.push({
       type: 'Apex', name: n,
-      searchText: n.toLowerCase(),
+      searchText: searchTextWithTypeKeywords('Apex', n),
       url: `${o}/lightning/setup/ApexClasses/page?address=%2F${id}`,
+    });
+  }
+  for (const p of profiles) {
+    const n = firstDefined(p, ['Name', 'name']);
+    const id = firstDefined(p, ['Id', 'id']);
+    if (!n || !id) continue;
+    items.push({
+      type: 'Profile', name: n,
+      searchText: searchTextWithTypeKeywords('Profile', n),
+      url: `${o}/lightning/setup/EnhancedProfiles/page?address=%2F${encodeURIComponent(id)}`,
+    });
+  }
+  for (const ps of permSets) {
+    const name = firstDefined(ps, ['Name', 'name']);
+    const label = firstDefined(ps, ['Label', 'label']) || name;
+    const id = firstDefined(ps, ['Id', 'id']);
+    if (!id) continue;
+    const display = label && name && label !== name ? `${label} (${name})` : (label || name || 'Permission Set');
+    items.push({
+      type: 'PermSet', name: display,
+      searchText: searchTextWithTypeKeywords('PermSet', `${label} ${name}`),
+      url: `${o}/lightning/setup/PermSets/page?address=%2F${encodeURIComponent(id)}`,
+    });
+  }
+  for (const g of permSetGroups) {
+    const dev = firstDefined(g, ['DeveloperName', 'developerName']);
+    const label = firstDefined(g, ['MasterLabel', 'masterLabel']) || dev || 'Permission Set Group';
+    const id = firstDefined(g, ['Id', 'id']);
+    if (!id) continue;
+    const display = dev && label !== dev ? `${label} (${dev})` : label;
+    items.push({
+      type: 'PermSetGroup', name: display,
+      searchText: searchTextWithTypeKeywords('PermSetGroup', `${label} ${dev}`),
+      url: `${o}/lightning/setup/PermSetGroups/page?address=%2F${encodeURIComponent(id)}`,
+    });
+  }
+  for (const t of triggers) {
+    const n = firstDefined(t, ['Name', 'name']);
+    const id = firstDefined(t, ['Id', 'id']);
+    const table = firstDefined(t, ['TableEnumOrId', 'tableEnumOrId']);
+    if (!n || !id) continue;
+    items.push({
+      type: 'Trigger', name: n,
+      searchText: searchTextWithTypeKeywords('Trigger', `${n} ${table}`),
+      url: `${o}/lightning/setup/ApexTriggers/page?address=%2F${encodeURIComponent(id)}`,
+    });
+  }
+  for (const pg of vfPages) {
+    const n = firstDefined(pg, ['Name', 'name']);
+    const id = firstDefined(pg, ['Id', 'id']);
+    if (!n || !id) continue;
+    items.push({
+      type: 'VFPage', name: n,
+      searchText: searchTextWithTypeKeywords('VFPage', n),
+      url: `${o}/lightning/setup/ApexPages/page?address=%2F${encodeURIComponent(id)}`,
     });
   }
   return items;
@@ -251,7 +343,17 @@ async function loadFromNetwork(tabUrl) {
     );
   }
 
-  const [flows, sobjects, lwcs, apexes] = await Promise.all([
+  const [
+    flows,
+    sobjects,
+    lwcs,
+    apexes,
+    profiles,
+    permSets,
+    permSetGroups,
+    triggers,
+    vfPages,
+  ] = await Promise.all([
     soqlQuery(apiBase, sid, apiVersion,
       'SELECT Id,Label,ApiName,ProcessType,ActiveVersionId FROM FlowDefinitionView', 'flows', false
     ).catch(e => { dbgWarn('flows', e); return []; }),
@@ -262,10 +364,46 @@ async function loadFromNetwork(tabUrl) {
     soqlQuery(apiBase, sid, apiVersion,
       "SELECT Id,Name,NamespacePrefix FROM ApexClass WHERE NamespacePrefix = null", 'apex', true
     ).catch(e => { dbgWarn('apex', e); return []; }),
+    soqlQuery(apiBase, sid, apiVersion,
+      'SELECT Id,Name FROM Profile', 'profiles', false
+    ).catch(e => { dbgWarn('profiles', e); return []; }),
+    soqlQuery(apiBase, sid, apiVersion,
+      'SELECT Id,Name,Label FROM PermissionSet WHERE IsOwnedByProfile = false', 'permSets', false
+    ).catch(e => { dbgWarn('permSets', e); return []; }),
+    soqlQuery(apiBase, sid, apiVersion,
+      'SELECT Id,MasterLabel,DeveloperName FROM PermissionSetGroup', 'permSetGroups', false
+    ).catch(e => { dbgWarn('permSetGroups', e); return []; }),
+    soqlQuery(apiBase, sid, apiVersion,
+      'SELECT Id,Name,TableEnumOrId FROM ApexTrigger WHERE NamespacePrefix = null', 'triggers', true
+    ).catch(e => { dbgWarn('triggers', e); return []; }),
+    soqlQuery(apiBase, sid, apiVersion,
+      'SELECT Id,Name FROM ApexPage WHERE NamespacePrefix = null', 'vfPages', true
+    ).catch(e => { dbgWarn('vfPages', e); return []; }),
   ]);
 
-  const components = buildComponentList(uiOrigin, flows, sobjects, lwcs, apexes);
-  const counts = { flows: flows.length, objects: sobjects.length, lwc: lwcs.length, apex: apexes.length };
+  const components = buildComponentList(
+    uiOrigin,
+    flows,
+    sobjects,
+    lwcs,
+    apexes,
+    profiles,
+    permSets,
+    permSetGroups,
+    triggers,
+    vfPages
+  );
+  const counts = {
+    flows: flows.length,
+    objects: sobjects.length,
+    lwc: lwcs.length,
+    apex: apexes.length,
+    profiles: profiles.length,
+    permSets: permSets.length,
+    permSetGroups: permSetGroups.length,
+    triggers: triggers.length,
+    vfPages: vfPages.length,
+  };
   dbg('built', components.length, 'components', counts);
   return { components, counts, uiOrigin, apiBase, apiVersion };
 }
